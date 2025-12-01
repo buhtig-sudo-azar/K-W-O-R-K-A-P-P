@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Link from 'next/link'
 
 interface DataCard {
   id: number
@@ -26,8 +27,24 @@ export default function FullstackDemoPage() {
   const [isMobile, setIsMobile] = useState(false)
   const [studyTime, setStudyTime] = useState(0)
   const [showStudyProgress, setShowStudyProgress] = useState(false)
+  const [showScrollToTop, setShowScrollToTop] = useState(false)
   
   const cardRefs = useRef<Record<number, HTMLDivElement>>({})
+
+  // Отслеживание прокрутки для кнопки "вверх"
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollToTop(window.scrollY > 300)
+    }
+    
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // Прокрутка вверх
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   useEffect(() => {
     // Определяем мобильное устройство
@@ -160,9 +177,22 @@ export async function GET(request: Request) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-8">
       <div className="max-w-6xl mx-auto">
-        {/* Заголовок */}
+        {/* Заголовок с кнопкой возврата */}
         <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">🚀 Full-Stack Демонстрация</h1>
+          <div className="flex items-center justify-between mb-4">
+            <Link 
+              href="/"
+              className="inline-flex items-center space-x-2 px-4 py-2 bg-white hover:bg-gray-50 border border-gray-200 rounded-lg transition-colors shadow-sm"
+            >
+              <span className="text-gray-700">←</span>
+              <span className="text-gray-700">На главную</span>
+            </Link>
+            <div className="text-sm text-gray-500">
+              🚀 Full-Stack Демо
+            </div>
+          </div>
+          
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">Full-Stack Демонстрация</h1>
           <p className="text-gray-600">
             Интерактивная демонстрация полного цикла разработки от фронтенда до бэкенда
           </p>
@@ -317,6 +347,30 @@ export async function GET(request: Request) {
           </div>
         </div>
       </div>
+
+      {/* Кнопка прокрутки вверх */}
+      {showScrollToTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-all duration-300 z-40 flex items-center justify-center"
+          aria-label="Прокрутить наверх"
+        >
+          <svg 
+            className="w-6 h-6" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d="M5 10l7-7m0 0l7 7m-7-7v18" 
+            />
+          </svg>
+        </button>
+      )}
 
       {/* Модальное окно с кодом */}
       {showCodeModal && selectedCard && (
