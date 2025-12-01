@@ -36,7 +36,6 @@ export default function UsersTable() {
       case 'active': return 'bg-green-900/50 text-green-300'
       case 'inactive': return 'bg-red-900/50 text-red-300'
       case 'suspended': return 'bg-yellow-900/50 text-yellow-300'
-      default: return 'bg-gray-800 text-gray-300'
     }
   }
 
@@ -69,6 +68,40 @@ export default function UsersTable() {
     }`)
   }
 
+  const deleteUser = (userId: number) => {
+    if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+      const updatedUsers = users.filter(user => user.id !== userId)
+      setUsers(updatedUsers)
+      setSelectedUsers(prev => prev.filter(id => id !== userId))
+      alert('Пользователь удален')
+    }
+  }
+
+  const changeUserRole = (userId: number, newRole: User['role']) => {
+    const updatedUsers = users.map(user => 
+      user.id === userId 
+        ? { ...user, role: newRole } 
+        : user
+    )
+    setUsers(updatedUsers)
+    alert(`Роль пользователя изменена на: ${
+      newRole === 'admin' ? 'Администратор' : 
+      newRole === 'editor' ? 'Редактор' :
+      newRole === 'viewer' ? 'Наблюдатель' : 'Пользователь'
+    }`)
+  }
+
+  const deleteSelectedUsers = () => {
+    if (selectedUsers.length === 0) return
+    
+    if (confirm(`Вы уверены, что хотите удалить ${selectedUsers.length} пользователей?`)) {
+      const updatedUsers = users.filter(user => !selectedUsers.includes(user.id))
+      setUsers(updatedUsers)
+      setSelectedUsers([])
+      alert(`Удалено ${selectedUsers.length} пользователей`)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -93,10 +126,13 @@ export default function UsersTable() {
             {selectedUsers.length > 0 && (
               <div className="flex items-center space-x-3">
                 <span className="text-gray-400">{selectedUsers.length} выбрано</span>
-                <button className="px-3 py-1 bg-red-900/50 text-red-300 rounded-lg text-sm">
-                  Удалить
+                <button 
+                  onClick={deleteSelectedUsers}
+                  className="px-3 py-1 bg-red-900/50 text-red-300 rounded-lg text-sm hover:bg-red-800/50 transition-colors"
+                >
+                  Удалить выбранных
                 </button>
-                <button className="px-3 py-1 bg-blue-900/50 text-blue-300 rounded-lg text-sm">
+                <button className="px-3 py-1 bg-blue-900/50 text-blue-300 rounded-lg text-sm hover:bg-blue-800/50 transition-colors">
                   Изменить роль
                 </button>
               </div>
@@ -172,16 +208,29 @@ export default function UsersTable() {
                       <button 
                         onClick={() => updateUserStatus(user.id, 'active')}
                         className="p-1 hover:bg-gray-700 rounded transition-colors"
+                        title="Активировать"
                       >
                         ✅
                       </button>
                       <button 
                         onClick={() => updateUserStatus(user.id, 'suspended')}
                         className="p-1 hover:bg-gray-700 rounded transition-colors"
+                        title="Приостановить"
                       >
                         ⏸️
                       </button>
-                      <button className="p-1 hover:bg-red-900/50 rounded transition-colors">
+                      <button 
+                        onClick={() => changeUserRole(user.id, user.role === 'admin' ? 'editor' : user.role === 'editor' ? 'viewer' : 'user')}
+                        className="p-1 hover:bg-gray-700 rounded transition-colors"
+                        title="Изменить роль"
+                      >
+                        🔄
+                      </button>
+                      <button 
+                        onClick={() => deleteUser(user.id)}
+                        className="p-1 hover:bg-red-900/50 rounded transition-colors"
+                        title="Удалить"
+                      >
                         🗑️
                       </button>
                     </div>
