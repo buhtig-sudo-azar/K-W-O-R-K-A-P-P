@@ -23,10 +23,7 @@ export default function Home() {
                className="text-gray-600 hover:text-gray-900 transition-colors">
               Перейти на Kwork
             </a>
-            <a href="https://github.com" target="_blank" rel="noopener noreferrer"
-               className="text-gray-600 hover:text-gray-900 transition-colors">
-              GitHub
-            </a>
+          
           </div>
         </div>
       </nav>
