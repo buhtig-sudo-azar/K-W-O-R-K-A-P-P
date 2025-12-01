@@ -2,22 +2,71 @@
 
 import { useState } from 'react'
 
+// Определяем полный интерфейс User
 interface User {
   id: number
   name: string
   email: string
   role: 'admin' | 'editor' | 'viewer' | 'user'
   status: 'active' | 'inactive' | 'suspended'
+  createdAt?: string // Делаем опциональным, чтобы совместимо с текущими данными
   lastLogin: string
+  permissions?: string[] // Делаем опциональным
 }
 
 export default function UsersTable() {
+  // Начальные данные, совместимые с интерфейсом
   const [users, setUsers] = useState<User[]>([
-    { id: 1, name: 'Александр Иванов', email: 'admin@example.com', role: 'admin', status: 'active', lastLogin: '2 минуты назад' },
-    { id: 2, name: 'Мария Петрова', email: 'editor@example.com', role: 'editor', status: 'active', lastLogin: '1 час назад' },
-    { id: 3, name: 'Дмитрий Сидоров', email: 'viewer@example.com', role: 'viewer', status: 'active', lastLogin: '3 часа назад' },
-    { id: 4, name: 'Анна Козлова', email: 'user@example.com', role: 'user', status: 'inactive', lastLogin: '2 дня назад' },
-    { id: 5, name: 'Игорь Николаев', email: 'igor@example.com', role: 'user', status: 'suspended', lastLogin: 'никогда' },
+    { 
+      id: 1, 
+      name: 'Александр Иванов', 
+      email: 'admin@example.com', 
+      role: 'admin', 
+      status: 'active', 
+      createdAt: '2024-01-15',
+      lastLogin: '2 минуты назад',
+      permissions: ['full_access']
+    },
+    { 
+      id: 2, 
+      name: 'Мария Петрова', 
+      email: 'editor@example.com', 
+      role: 'editor', 
+      status: 'active', 
+      createdAt: '2024-02-20',
+      lastLogin: '1 час назад',
+      permissions: ['content:read', 'content:write']
+    },
+    { 
+      id: 3, 
+      name: 'Дмитрий Сидоров', 
+      email: 'viewer@example.com', 
+      role: 'viewer', 
+      status: 'active', 
+      createdAt: '2024-03-05',
+      lastLogin: '3 часа назад',
+      permissions: ['content:read']
+    },
+    { 
+      id: 4, 
+      name: 'Анна Козлова', 
+      email: 'user@example.com', 
+      role: 'user', 
+      status: 'inactive', 
+      createdAt: '2024-03-10',
+      lastLogin: '2 дня назад',
+      permissions: []
+    },
+    { 
+      id: 5, 
+      name: 'Игорь Николаев', 
+      email: 'igor@example.com', 
+      role: 'user', 
+      status: 'suspended', 
+      createdAt: '2024-03-12',
+      lastLogin: 'никогда',
+      permissions: []
+    },
   ])
 
   const [selectedUsers, setSelectedUsers] = useState<number[]>([])
@@ -55,10 +104,20 @@ export default function UsersTable() {
     }
   }
 
+  // Функция для обновления статуса пользователя
   const updateUserStatus = (userId: number, newStatus: User['status']) => {
     const updatedUsers = users.map(user => 
       user.id === userId 
-        ? { ...user, status: newStatus } 
+        ? { 
+            ...user, 
+            status: newStatus,
+            // Обеспечиваем, что все обязательные поля сохраняются
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            lastLogin: user.lastLogin
+          } 
         : user
     )
     setUsers(updatedUsers)
@@ -68,6 +127,7 @@ export default function UsersTable() {
     }`)
   }
 
+  // Функция для удаления пользователя
   const deleteUser = (userId: number) => {
     if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
       const updatedUsers = users.filter(user => user.id !== userId)
@@ -77,6 +137,7 @@ export default function UsersTable() {
     }
   }
 
+  // Функция для изменения роли пользователя
   const changeUserRole = (userId: number, newRole: User['role']) => {
     const updatedUsers = users.map(user => 
       user.id === userId 
@@ -91,6 +152,7 @@ export default function UsersTable() {
     }`)
   }
 
+  // Функция для удаления выбранных пользователей
   const deleteSelectedUsers = () => {
     if (selectedUsers.length === 0) return
     
@@ -101,6 +163,9 @@ export default function UsersTable() {
       alert(`Удалено ${selectedUsers.length} пользователей`)
     }
   }
+
+  // Роли для изменения
+  const availableRoles: User['role'][] = ['admin', 'editor', 'viewer', 'user']
 
   return (
     <div className="space-y-6">
@@ -132,9 +197,29 @@ export default function UsersTable() {
                 >
                   Удалить выбранных
                 </button>
-                <button className="px-3 py-1 bg-blue-900/50 text-blue-300 rounded-lg text-sm hover:bg-blue-800/50 transition-colors">
-                  Изменить роль
-                </button>
+                <div className="relative group">
+                  <button className="px-3 py-1 bg-blue-900/50 text-blue-300 rounded-lg text-sm hover:bg-blue-800/50 transition-colors">
+                    Изменить роль
+                  </button>
+                  <div className="absolute hidden group-hover:block bg-gray-900 border border-gray-700 rounded-lg p-2 mt-1 z-10">
+                    {availableRoles.map(role => (
+                      <button
+                        key={role}
+                        className="block w-full text-left px-2 py-1 hover:bg-gray-800 rounded text-sm"
+                        onClick={() => {
+                          selectedUsers.forEach(userId => {
+                            const user = users.find(u => u.id === userId)
+                            if (user) changeUserRole(userId, role)
+                          })
+                        }}
+                      >
+                        {role === 'admin' ? 'Администратор' :
+                         role === 'editor' ? 'Редактор' :
+                         role === 'viewer' ? 'Наблюдатель' : 'Пользователь'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -220,9 +305,13 @@ export default function UsersTable() {
                         ⏸️
                       </button>
                       <button 
-                        onClick={() => changeUserRole(user.id, user.role === 'admin' ? 'editor' : user.role === 'editor' ? 'viewer' : 'user')}
+                        onClick={() => {
+                          const currentIndex = availableRoles.indexOf(user.role)
+                          const nextIndex = (currentIndex + 1) % availableRoles.length
+                          changeUserRole(user.id, availableRoles[nextIndex])
+                        }}
                         className="p-1 hover:bg-gray-700 rounded transition-colors"
-                        title="Изменить роль"
+                        title="Сменить роль"
                       >
                         🔄
                       </button>
