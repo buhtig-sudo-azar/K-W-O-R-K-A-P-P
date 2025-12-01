@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function FullstackDemo() {
+  const router = useRouter()
   const [response, setResponse] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -19,6 +21,7 @@ export default function FullstackDemo() {
   const [showScrollToTop, setShowScrollToTop] = useState(false)
   const [scrollPosition, setScrollPosition] = useState(0)
   const [footerInView, setFooterInView] = useState(false)
+  const [showRoundHomeButton, setShowRoundHomeButton] = useState(false)
   
   const cardRefs = useRef<{[key: string]: HTMLDivElement | null}>({})
   const codeModalRef = useRef<HTMLDivElement>(null)
@@ -31,6 +34,11 @@ export default function FullstackDemo() {
   const footerRef = useRef<HTMLDivElement>(null)
   const lastScrollY = useRef(0)
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null)
+
+  // Функция для перехода на главную страницу
+  const handleGoHome = () => {
+    router.push('/')
+  }
 
   // Определяем мобильное устройство
   useEffect(() => {
@@ -71,6 +79,14 @@ export default function FullstackDemo() {
       const desktopThreshold = 300
       const threshold = isMobile ? mobileThreshold : desktopThreshold
       setShowScrollToTop(scrollTop > threshold)
+      
+      // Показывать круглую кнопку возврата на главную после небольшого скролла
+      // На мобильных показываем всегда
+      if (isMobile) {
+        setShowRoundHomeButton(true)
+      } else {
+        setShowRoundHomeButton(scrollTop > 100)
+      }
       
       // Вычисляем прозрачность для фиксированной кнопки (только для мобильных)
       let opacity = 1
@@ -147,6 +163,7 @@ export default function FullstackDemo() {
     setShowScrollToTop(false)
     setScrollPosition(0)
     setFooterInView(false)
+    setShowRoundHomeButton(false)
   }
 
   // Функция для продления времени при взаимодействии
@@ -204,6 +221,7 @@ export default function FullstackDemo() {
     setShowScrollToTop(false)
     setScrollPosition(0)
     setFooterInView(false)
+    setShowRoundHomeButton(isMobile) // На мобильных показываем круглую кнопку
     
     try {
       const res = await fetch('/api/demo', {
@@ -281,6 +299,7 @@ export default function FullstackDemo() {
     setScrolledDown(false)
     setScrollOpacity(1)
     setShowScrollToTop(false)
+    setShowRoundHomeButton(isMobile ? true : false)
   }
 
   // Обработчик для десктопа (наведение с задержкой)
@@ -926,6 +945,24 @@ export async function analyticsCollector(
 
   return (
     <div ref={mainContainerRef} className="p-4 md:p-8 max-w-7xl mx-auto relative">
+      {/* Круглая кнопка возврата на главную страницу */}
+      {showRoundHomeButton && !activeTooltip && (
+        <button
+          onClick={handleGoHome}
+          className={`fixed z-30 p-3 text-white rounded-full shadow-lg hover:scale-110 transition-all duration-300 ${
+            isMobile 
+              ? 'top-4 left-4 bg-blue-600/80 hover:bg-blue-700/90 backdrop-blur-sm'
+              : 'top-6 left-6 bg-blue-600 hover:bg-blue-700'
+          }`}
+          aria-label="Вернуться на главную"
+          title="Вернуться на главную"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+        </button>
+      )}
+
       {/* Фиксированная кнопка запроса для мобильных */}
       {isMobile && (
         <div className="fixed bottom-4 left-0 right-0 z-30 px-4">
@@ -1035,7 +1072,7 @@ export async function analyticsCollector(
                         </div>
                       )}
                       
-                      {/* Кнопки управления таймером */}
+                      {/* Кнопки управления таймером - ПРЯМОУГОЛЬНАЯ КНОПКА ВОЗВРАТА НА ГЛАВНУЮ УБРАНА */}
                       <div className="mt-4 flex flex-wrap gap-2">
                         {showHomeButton && (
                           <button
@@ -1164,6 +1201,8 @@ export async function analyticsCollector(
                       ))}
                     </div>
                   </div>
+
+                  {/* ПРЯМОУГОЛЬНАЯ КНОПКА ВОЗВРАТА НА ГЛАВНУЮ В МОБИЛЬНОЙ ВЕРСИИ УБРАНА */}
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -1173,6 +1212,8 @@ export async function analyticsCollector(
                     <p className="text-sm text-gray-400 mt-2">
                       Нажмите кнопку "Выполнить Full-Stack запрос" {isMobile ? 'внизу экрана' : 'в левой панели'}
                     </p>
+                    
+                    {/* ПРЯМОУГОЛЬНАЯ КНОПКА ВОЗВРАТА НА ГЛАВНУЮ В СОСТОЯНИИ ОЖИДАНИЯ УБРАНА */}
                   </div>
                   
                   <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-lg">
@@ -1281,6 +1322,13 @@ export async function analyticsCollector(
                         >
                           Продлить ещё
                         </button>
+                        {/* ПРЯМОУГОЛЬНАЯ КНОПКА ВОЗВРАТА В МОДАЛЬНОМ ОКНЕ ОСТАВЛЕНА, ТАК КАК КРУГЛАЯ КНОПКА НЕ ВИДНА */}
+                        <button
+                          onClick={handleGoHome}
+                          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex-1 min-w-[120px]"
+                        >
+                          🏠 На главную
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -1291,7 +1339,7 @@ export async function analyticsCollector(
         </div>
       </div>
 
-      {/* Футер с информацией */}
+      {/* Футер с информацией - ПРЯМОУГОЛЬНАЯ КНОПКА ВОЗВРАТА В ФУТЕРЕ УБРАНА */}
       <div 
         ref={footerRef} 
         className="mt-8 p-4 md:p-6 border border-yellow-200 bg-gradient-to-r from-yellow-50 to-amber-50 rounded-lg shadow-sm"
@@ -1353,6 +1401,15 @@ export async function analyticsCollector(
           </div>
         </div>
 
+        {/* Блок с информацией о портфолио - БЕЗ КНОПКИ */}
+        <div className="mt-6 pt-4 border-t border-yellow-300">
+          <div className="text-center">
+            <div className="text-sm text-yellow-700">
+              <span className="font-medium">📍 Эта демонстрация - часть портфолио для Kwork</span>
+              <p className="text-xs mt-1">Используйте круглую кнопку в верхнем левом углу для возврата на главную страницу</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )
