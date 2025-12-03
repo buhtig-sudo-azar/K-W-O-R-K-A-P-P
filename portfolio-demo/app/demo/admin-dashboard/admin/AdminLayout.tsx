@@ -31,13 +31,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   
   // Массив разделов админки
   const sections = [
-    { id: 'dashboard', name: '📊 Дашборд', icon: '📊' },
-    { id: 'users', name: '👥 Пользователи', icon: '👥' },
-    { id: 'roles', name: '🛡️ Роли', icon: '🛡️' },
-    { id: 'audit', name: '📝 Аудит', icon: '📝' },
-    { id: 'settings', name: '⚙️ Настройки', icon: '⚙️' },
-    { id: 'security', name: '🔐 Безопасность', icon: '🔐' },
-    { id: 'reports', name: '📈 Отчеты', icon: '📈' }
+    { id: 'dashboard', name: 'Дашборд', icon: '📊' },
+    { id: 'users', name: 'Пользователи', icon: '👥' },
+    { id: 'roles', name: 'Роли', icon: '🛡️' },
+    { id: 'audit', name: 'Аудит', icon: '📝' },
+    { id: 'settings', name: 'Настройки', icon: '⚙️' },
+    { id: 'security', name: 'Безопасность', icon: '🔐' },
+    { id: 'reports', name: 'Отчеты', icon: '📈' }
   ]
   
   return (
