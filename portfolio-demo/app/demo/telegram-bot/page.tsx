@@ -347,8 +347,8 @@ export default function TelegramBotDemo() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-400">Дата запуска</span>
-                  <span className="font-medium">15.03.2024</span>
+                  <span className="text-gray-400">Запуск</span>
+                  <span className="font-medium">{new Date().toLocaleString('ru-RU')}</span>
                 </div>
                 <div className="pt-3 border-t border-teal-800/50">
                   <p className="text-sm text-gray-400">
